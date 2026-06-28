@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-
+    
     <script>
         tailwind.config = {
             theme: {
@@ -69,21 +69,14 @@
             </template>
         </div>
 
-        <!-- NEW: distinct error state so a failed fetch doesn't look like an empty catalog -->
-        <div x-show="!loading && loadError" x-cloak class="col-span-full py-20 text-center" x-cloak>
-            <p class="font-serif text-xl mb-3">The archive couldn't be reached.</p>
-            <p class="text-muted text-sm mb-6">Check your connection and try again.</p>
-            <button @click="fetchProducts()" class="border border-dark text-dark px-6 py-3 text-xs uppercase tracking-widest hover:bg-gray-50 transition-colors">Retry</button>
-        </div>
-
-        <div x-show="!loading && !loadError" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div x-show="!loading" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             <template x-for="(item, id) in products" :key="id">
                 <div class="group flex flex-col bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                     <div class="relative overflow-hidden aspect-square bg-offwhite cursor-pointer" @click="openImage(item.imageUrl)">
                         <img x-show="item.imageUrl" :src="item.imageUrl" :alt="item.name" class="gallery-item w-full h-full object-cover" @error="$event.target.style.display='none'">
                         <div x-show="item.offerLabel" class="absolute top-3 left-3 bg-dark text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded" x-text="item.offerLabel"></div>
                     </div>
-
+                    
                     <div class="p-5 flex flex-col flex-1 justify-between">
                         <div>
                             <h3 class="font-sans text-[11px] font-bold uppercase tracking-wider text-gray-800 line-clamp-1" x-text="item.name"></h3>
@@ -101,7 +94,7 @@
                     </div>
                 </div>
             </template>
-
+            
             <div x-show="Object.keys(products).length === 0" class="col-span-full py-20 text-center text-muted font-serif text-xl" x-cloak>
                 The archive is currently empty.
             </div>
@@ -117,7 +110,7 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-
+            
             <div class="flex-1 overflow-y-auto p-6">
                 <template x-if="cart.length === 0">
                     <p class="text-center text-muted text-sm mt-10 font-serif">Your cart is empty.</p>
@@ -136,7 +129,7 @@
                     </template>
                 </div>
             </div>
-
+            
             <div class="p-6 border-t border-gray-200 bg-offwhite" x-show="cart.length > 0">
                 <div class="flex justify-between items-end mb-4">
                     <span class="text-sm uppercase tracking-widest text-muted">Subtotal</span>
@@ -150,11 +143,11 @@
     </div>
 
     <div x-show="checkoutModal" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6" x-transition.opacity>
-        <div class="absolute inset-0 bg-white/95 backdrop-blur-sm" @click="closeCheckout()"></div>
-
+        <div class="absolute inset-0 bg-white/95 backdrop-blur-sm" @click="checkoutModal = false"></div>
+        
         <div class="relative bg-white border border-gray-200 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto flex flex-col md:flex-row" @click.stop>
-
-            <button @click="closeCheckout()" class="absolute top-4 right-4 text-muted hover:text-dark z-10">
+            
+            <button @click="checkoutModal = false" class="absolute top-4 right-4 text-muted hover:text-dark z-10">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
 
@@ -171,7 +164,7 @@
                         <div x-show="cart.length > 3" class="text-xs text-muted italic">...and more items</div>
                     </div>
                 </div>
-
+                
                 <div class="mt-8 border-t border-gray-200 pt-6">
                     <div class="flex justify-between items-end mb-2">
                         <span class="text-sm text-muted">Total Due</span>
@@ -185,8 +178,7 @@
             </div>
 
             <div class="p-8 md:w-3/5 w-full">
-
-                <!-- STEP 1: Logistics -->
+                
                 <div x-show="step === 1" x-transition.in>
                     <h4 class="text-xs uppercase tracking-widest text-muted mb-8">Shipping Logistics</h4>
                     <form @submit.prevent="proceedToPayment" class="space-y-4">
@@ -238,25 +230,23 @@
                     </form>
                 </div>
 
-                <!-- STEP 2: UPI QR -->
                 <div x-show="step === 2" x-cloak x-transition.in class="flex flex-col h-full">
                     <h4 class="text-xs uppercase tracking-widest text-muted mb-6">Prepaid Checkout</h4>
-
+                    
                     <div class="flex-1 flex flex-col items-center text-center justify-center">
                         <div class="p-6 border border-gray-200 bg-offwhite w-full max-w-sm">
-                            <p class="text-sm font-medium mb-4">Scan via any UPI app</p>
+                            <p class="text-sm font-medium mb-4">Scan via FamApp or any UPI</p>
                             <div class="bg-white p-2 border border-gray-300 inline-block mb-4">
                                 <img :src="qrUrl" class="w-48 h-48" alt="UPI QR">
                             </div>
-                            <p class="text-xs text-muted mb-2">UPI ID:</p>
+                            <p class="text-xs text-muted mb-2">Verified Merchant ID:</p>
                             <p class="text-sm font-mono tracking-wider font-medium bg-gray-200 py-2">9744468830@fam</p>
-                            <p class="text-xs text-muted mt-3">Reference: <span class="font-mono" x-text="trackingId"></span></p>
                         </div>
-
+                        
                         <div class="w-full max-w-sm mt-4 text-left">
                             <div class="flex items-center gap-2 text-xs text-dark bg-gray-100 p-3 border border-gray-200 mb-4">
                                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span>Complete payment, then continue to upload your payment screenshot for verification.</span>
+                                <span>Note: Strictly complete the payment before clicking confirm. No extra details required.</span>
                             </div>
                         </div>
                     </div>
@@ -265,59 +255,21 @@
                         <button @click="step = 1" class="w-1/3 border border-dark text-dark py-4 text-sm tracking-widest uppercase font-medium hover:bg-gray-50 transition-colors">
                             Back
                         </button>
-                        <button @click="step = 2.5" class="w-2/3 bg-dark text-white py-4 text-sm tracking-widest uppercase font-medium hover:bg-black transition-colors">
-                            I Have Paid — Upload Proof
+                        <button @click="submitOrder" :disabled="submitting" class="w-2/3 bg-dark text-white py-4 text-sm tracking-widest uppercase font-medium hover:bg-black transition-colors disabled:opacity-50">
+                            <span x-text="submitting ? 'Processing...' : 'I Have Paid'"></span>
                         </button>
                     </div>
                 </div>
 
-                <!-- STEP 2.5: Payment proof upload (NEW) -->
-                <div x-show="step === 2.5" x-cloak x-transition.in class="flex flex-col h-full">
-                    <h4 class="text-xs uppercase tracking-widest text-muted mb-6">Upload Payment Proof</h4>
-
-                    <div class="flex-1 flex flex-col">
-                        <p class="text-sm text-muted mb-4">Upload a screenshot of your successful UPI payment. We manually verify every order before it ships — this is not automatic confirmation.</p>
-
-                        <label
-                            class="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-dark transition-colors"
-                            :class="proofPreview ? 'border-dark' : ''"
-                        >
-                            <input type="file" accept="image/*" class="hidden" @change="handleProofUpload($event)">
-                            <template x-if="!proofPreview">
-                                <div>
-                                    <svg class="w-8 h-8 mx-auto mb-2 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M12 12v9m0-9l-3 3m3-3l3 3"></path></svg>
-                                    <p class="text-xs uppercase tracking-widest text-muted">Tap to choose screenshot</p>
-                                </div>
-                            </template>
-                            <template x-if="proofPreview">
-                                <img :src="proofPreview" class="max-h-48 object-contain rounded">
-                            </template>
-                        </label>
-
-                        <p x-show="proofError" x-text="proofError" class="text-xs text-red-600 mt-2" x-cloak></p>
-                        <p x-show="proofPreview" x-cloak class="text-xs text-muted mt-2 text-center">Looks good? Submit below.</p>
-                    </div>
-
-                    <div class="mt-8 flex gap-4">
-                        <button @click="step = 2" class="w-1/3 border border-dark text-dark py-4 text-sm tracking-widest uppercase font-medium hover:bg-gray-50 transition-colors">
-                            Back
-                        </button>
-                        <button @click="submitOrder" :disabled="submitting || !proofData" class="w-2/3 bg-dark text-white py-4 text-sm tracking-widest uppercase font-medium hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                            <span x-text="submitting ? 'Submitting...' : 'Submit for Verification'"></span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- STEP 3: Confirmation (honest framing — pending, not confirmed) -->
                 <div x-show="step === 3" x-cloak x-transition.in class="flex flex-col h-full items-center justify-center text-center py-12">
-                    <svg class="w-16 h-16 text-dark mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h3 class="font-serif text-3xl mb-4">Submitted for Verification.</h3>
-                    <p class="text-muted mb-8 max-w-sm">We've received your order and payment proof. A team member will manually verify it before it ships — this usually takes a few hours.</p>
+                    <svg class="w-16 h-16 text-green-600 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1" d="M5 13l4 4L19 7"></path></svg>
+                    <h3 class="font-serif text-3xl mb-4">Order Received.</h3>
+                    <p class="text-muted mb-8">Your transaction is logged. Use the tracking ID below.</p>
                     <div class="bg-offwhite border border-gray-200 p-6 w-full">
                         <p class="text-xs uppercase tracking-widest text-muted mb-2">Tracking ID</p>
                         <p class="text-2xl font-mono tracking-widest font-medium" x-text="trackingId"></p>
                     </div>
-                    <button @click="closeCheckout()" class="mt-12 w-full border border-dark text-dark py-4 text-sm tracking-widest uppercase font-medium hover:bg-gray-50 transition-colors">
+                    <button @click="checkoutModal = false" class="mt-12 w-full border border-dark text-dark py-4 text-sm tracking-widest uppercase font-medium hover:bg-gray-50 transition-colors">
                         Return to Archive
                     </button>
                 </div>
@@ -347,13 +299,9 @@
                 <template x-if="trackingResult && trackingResult.status">
                     <div>
                         <p class="text-xs uppercase tracking-widest text-muted mb-2">Current Status</p>
-                        <div class="inline-block text-xs px-4 py-2 uppercase tracking-widest mb-4"
-                             :class="statusBadgeClass(trackingResult.status)"
-                             x-text="trackingResult.status"></div>
+                        <div class="inline-block bg-dark text-white text-xs px-4 py-2 uppercase tracking-widest mb-4" x-text="trackingResult.status"></div>
                         <p class="text-sm">Multiple Items Order</p>
-                        <p class="text-xs text-muted mt-4" x-show="trackingResult.status === 'Confirmed' || trackingResult.status === 'Shipped'">Standard 5-7 days DTDC delivery applies.</p>
-                        <p class="text-xs text-muted mt-4" x-show="trackingResult.status === 'Pending Verification'">Your payment proof is under manual review.</p>
-                        <p class="text-xs text-red-600 mt-4" x-show="trackingResult.status === 'Rejected'">We couldn't verify this payment. Contact support with your tracking ID.</p>
+                        <p class="text-xs text-muted mt-4">Standard 5-7 days DTDC delivery applies.</p>
                     </div>
                 </template>
             </div>
@@ -373,70 +321,913 @@
                 dbUrl: 'https://dedrop-store-default-rtdb.firebaseio.com',
                 products: {},
                 loading: true,
-                loadError: false,
-
+                
                 cart: [],
                 cartOpen: false,
                 checkoutModal: false,
                 trackingModal: false,
-
+                
                 step: 1,
                 submitting: false,
-
+                
                 // Address Data
                 locations: {
-                    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik"],
-                    "Delhi": ["New Delhi", "North Delhi", "South Delhi", "East Delhi", "West Delhi"],
-                    "Karnataka": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi"],
-                    "Kerala": ["Thiruvananthapuram", "Ernakulam", "Kozhikode", "Malappuram", "Thrissur", "Kannur"],
-                    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem"],
-                    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar"],
-                    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Varanasi"],
-                    "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"],
-                    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Ramagundam"],
-                    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer"]
+                    
+  "Andhra Pradesh": [
+    "Anakapalli",
+    "Anantapur",
+    "Annamayya",
+    "Alluri Sitharama Raju",
+    "Bapatla",
+    "Chittoor",
+    "Dr. B.R. Ambedkar Konaseema",
+    "East Godavari",
+    "Eluru",
+    "Guntur",
+    "Kakinada",
+    "Krishna",
+    "Kurnool",
+    "Nandyal",
+    "NTR",
+    "Palnadu",
+    "Parvathipuram Manyam",
+    "Prakasam",
+    "Sri Potti Sriramulu Nellore",
+    "Sri Sathya Sai",
+    "Srikakulam",
+    "Tirupati",
+    "Visakhapatnam",
+    "Vizianagaram",
+    "West Godavari",
+    "YSR Kadapa"
+  ],
+  "Arunachal Pradesh": [
+    "Anjaw",
+    "Bichom",
+    "Changlang",
+    "Dibang Valley",
+    "East Kameng",
+    "East Siang",
+    "Kamle",
+    "Keyi Panyor",
+    "Kra Daadi",
+    "Kurung Kumey",
+    "Leparada",
+    "Lohit",
+    "Longding",
+    "Lower Dibang Valley",
+    "Lower Siang",
+    "Lower Subansiri",
+    "Namsai",
+    "Pakke Kessang",
+    "Papum Pare",
+    "Shi Yomi",
+    "Siang",
+    "Tawang",
+    "Tirap",
+    "Upper Siang",
+    "Upper Subansiri",
+    "West Kameng",
+    "West Siang"
+  ],
+  "Assam": [
+    "Bajali",
+    "Baksa",
+    "Barpeta",
+    "Biswanath",
+    "Bongaigaon",
+    "Cachar",
+    "Charaideo",
+    "Chirang",
+    "Darrang",
+    "Dhemaji",
+    "Dhubri",
+    "Dibrugarh",
+    "Dima Hasao",
+    "Goalpara",
+    "Golaghat",
+    "Hailakandi",
+    "Hojai",
+    "Jorhat",
+    "Kamrup",
+    "Kamrup Metropolitan",
+    "Karbi Anglong",
+    "Karimganj",
+    "Kokrajhar",
+    "Lakhimpur",
+    "Majuli",
+    "Morigaon",
+    "Nagaon",
+    "Nalbari",
+    "Sivasagar",
+    "Sonitpur",
+    "South Salmara-Mankachar",
+    "Tamulpur",
+    "Tinsukia",
+    "Udalguri",
+    "West Karbi Anglong"
+  ],
+  "Bihar": [
+    "Araria",
+    "Arwal",
+    "Aurangabad",
+    "Banka",
+    "Begusarai",
+    "Bhagalpur",
+    "Bhojpur",
+    "Buxar",
+    "Darbhanga",
+    "East Champaran",
+    "Gaya",
+    "Gopalganj",
+    "Jamui",
+    "Jehanabad",
+    "Kaimur",
+    "Katihar",
+    "Khagaria",
+    "Kishanganj",
+    "Lakhisarai",
+    "Madhepura",
+    "Madhubani",
+    "Munger",
+    "Muzaffarpur",
+    "Nalanda",
+    "Nawada",
+    "Patna",
+    "Purnia",
+    "Rohtas",
+    "Saharsa",
+    "Samastipur",
+    "Saran",
+    "Sheikhpura",
+    "Sheohar",
+    "Sitamarhi",
+    "Siwan",
+    "Supaul",
+    "Vaishali",
+    "West Champaran"
+  ],
+  "Chhattisgarh": [
+    "Balod",
+    "Baloda Bazar",
+    "Balrampur",
+    "Bastar",
+    "Bemetara",
+    "Bijapur",
+    "Bilaspur",
+    "Dantewada",
+    "Dhamtari",
+    "Durg",
+    "Gariaband",
+    "Gaurela-Pendra-Marwahi",
+    "Janjgir-Champa",
+    "Jashpur",
+    "Kabirdham",
+    "Khairagarh-Chhuikhadan-Gandai",
+    "Kondagaon",
+    "Korba",
+    "Koriya",
+    "Mahasamund",
+    "Manendragarh-Chirmiri-Bharatpur",
+    "Mohla-Manpur-Ambagarh Chowki",
+    "Mungeli",
+    "Narayanpur",
+    "Raigarh",
+    "Raipur",
+    "Rajnandgaon",
+    "Sakti",
+    "Sarangarh-Bilaigarh",
+    "Sukma",
+    "Surajpur",
+    "Surguja"
+  ],
+  "Goa": [
+    "North Goa",
+    "South Goa"
+  ],
+  "Gujarat": [
+    "Ahmedabad",
+    "Amreli",
+    "Anand",
+    "Aravalli",
+    "Banaskantha",
+    "Bharuch",
+    "Bhavnagar",
+    "Botad",
+    "Chhota Udaipur",
+    "Dahod",
+    "Dang",
+    "Devbhoomi Dwarka",
+    "Gandhinagar",
+    "Gir Somnath",
+    "Jamnagar",
+    "Junagadh",
+    "Kheda",
+    "Kutch",
+    "Mahisagar",
+    "Mehsana",
+    "Morbi",
+    "Narmada",
+    "Navsari",
+    "Panchmahal",
+    "Patan",
+    "Porbandar",
+    "Rajkot",
+    "Sabarkantha",
+    "Surat",
+    "Surendranagar",
+    "Tapi",
+    "Vadodara",
+    "Valsad"
+  ],
+  "Haryana": [
+    "Ambala",
+    "Bhiwani",
+    "Charkhi Dadri",
+    "Faridabad",
+    "Fatehabad",
+    "Gurugram",
+    "Hisar",
+    "Jhajjar",
+    "Jind",
+    "Kaithal",
+    "Karnal",
+    "Kurukshetra",
+    "Mahendragarh",
+    "Nuh",
+    "Palwal",
+    "Panchkula",
+    "Panipat",
+    "Rewari",
+    "Rohtak",
+    "Sirsa",
+    "Sonipat",
+    "Yamunanagar"
+  ],
+  "Himachal Pradesh": [
+    "Bilaspur",
+    "Chamba",
+    "Hamirpur",
+    "Kangra",
+    "Kinnaur",
+    "Kullu",
+    "Lahaul and Spiti",
+    "Mandi",
+    "Shimla",
+    "Sirmaur",
+    "Solan",
+    "Una"
+  ],
+  "Jharkhand": [
+    "Bokaro",
+    "Chatra",
+    "Deoghar",
+    "Dhanbad",
+    "Dumka",
+    "East Singhbhum",
+    "Garhwa",
+    "Giridih",
+    "Godda",
+    "Gumla",
+    "Hazaribagh",
+    "Jamtara",
+    "Khunti",
+    "Koderma",
+    "Latehar",
+    "Lohardaga",
+    "Pakur",
+    "Palamu",
+    "Ramgarh",
+    "Ranchi",
+    "Sahibganj",
+    "Seraikela-Kharsawan",
+    "Simdega",
+    "West Singhbhum"
+  ],
+  "Karnataka": [
+    "Bagalkote",
+    "Ballari",
+    "Belagavi",
+    "Bengaluru Rural",
+    "Bengaluru Urban",
+    "Bidar",
+    "Chamarajanagar",
+    "Chikkaballapur",
+    "Chikkamagaluru",
+    "Chitradurga",
+    "Dakshina Kannada",
+    "Davanagere",
+    "Dharwad",
+    "Gadag",
+    "Hassan",
+    "Haveri",
+    "Kalaburagi",
+    "Kodagu",
+    "Kolar",
+    "Koppal",
+    "Mandya",
+    "Mysuru",
+    "Raichur",
+    "Ramanagara",
+    "Shivamogga",
+    "Tumakuru",
+    "Udupi",
+    "Uttara Kannada",
+    "Vijayapura",
+    "Vijayanagara",
+    "Yadgir"
+  ],
+  "Kerala": [
+    "Alappuzha",
+    "Ernakulam",
+    "Idukki",
+    "Kannur",
+    "Kasaragod",
+    "Kollam",
+    "Kottayam",
+    "Kozhikode",
+    "Malappuram",
+    "Palakkad",
+    "Pathanamthitta",
+    "Thiruvananthapuram",
+    "Thrissur",
+    "Wayanad"
+  ],
+  
+  "Ladakh": [
+    "Kargil",
+    "Leh"
+  ],
+  "Lakshadweep": [
+    "Lakshadweep"
+  ],
+  "Madhya Pradesh": [
+    "Agar Malwa",
+    "Alirajpur",
+    "Anuppur",
+    "Ashoknagar",
+    "Balaghat",
+    "Barwani",
+    "Betul",
+    "Bhind",
+    "Bhopal",
+    "Burhanpur",
+    "Chhatarpur",
+    "Chhindwara",
+    "Damoh",
+    "Datia",
+    "Dewas",
+    "Dhar",
+    "Dindori",
+    "Guna",
+    "Gwalior",
+    "Harda",
+    "Narmadapuram",
+    "Indore",
+    "Jabalpur",
+    "Jhabua",
+    "Katni",
+    "Khandwa",
+    "Khargone",
+    "Maihar",
+    "Mandla",
+    "Mandsaur",
+    "Morena",
+    "Narsinghpur",
+    "Neemuch",
+    "Niwari",
+    "Pandhurna",
+    "Panna",
+    "Raisen",
+    "Rajgarh",
+    "Ratlam",
+    "Rewa",
+    "Sagar",
+    "Satna",
+    "Sehore",
+    "Seoni",
+    "Shahdol",
+    "Shajapur",
+    "Sheopur",
+    "Shivpuri",
+    "Sidhi",
+    "Singrauli",
+    "Tikamgarh",
+    "Ujjain",
+    "Umaria",
+    "Vidisha",
+    "Mauganj"
+  ],
+  "Maharashtra": [
+    "Ahmednagar",
+    "Akola",
+    "Amravati",
+    "Beed",
+    "Bhandara",
+    "Buldhana",
+    "Chandrapur",
+    "Chhatrapati Sambhajinagar",
+    "Dharashiv",
+    "Dhule",
+    "Gadchiroli",
+    "Gondia",
+    "Hingoli",
+    "Jalgaon",
+    "Jalna",
+    "Kolhapur",
+    "Latur",
+    "Mumbai City",
+    "Mumbai Suburban",
+    "Nagpur",
+    "Nanded",
+    "Nandurbar",
+    "Nashik",
+    "Palghar",
+    "Parbhani",
+    "Pune",
+    "Raigad",
+    "Ratnagiri",
+    "Sangli",
+    "Satara",
+    "Sindhudurg",
+    "Solapur",
+    "Thane",
+    "Wardha",
+    "Washim",
+    "Yavatmal"
+  ],
+  "Manipur": [
+    "Bishnupur",
+    "Chandel",
+    "Churachandpur",
+    "Imphal East",
+    "Imphal West",
+    "Jiribam",
+    "Kakching",
+    "Kamjong",
+    "Kangpokpi",
+    "Noney",
+    "Pherzawl",
+    "Senapati",
+    "Tamenglong",
+    "Tengnoupal",
+    "Thoubal",
+    "Ukhrul"
+  ],
+  "Meghalaya": [
+    "East Garo Hills",
+    "East Jaintia Hills",
+    "East Khasi Hills",
+    "Eastern West Khasi Hills",
+    "North Garo Hills",
+    "Ri Bhoi",
+    "South Garo Hills",
+    "South West Garo Hills",
+    "South West Khasi Hills",
+    "West Garo Hills",
+    "West Jaintia Hills",
+    "West Khasi Hills"
+  ],
+  "Mizoram": [
+    "Aizawl",
+    "Champhai",
+    "Hnahthial",
+    "Khawzawl",
+    "Kolasib",
+    "Lawngtlai",
+    "Lunglei",
+    "Mamit",
+    "Saiha",
+    "Saitual",
+    "Serchhip"
+  ],
+  "Nagaland": [
+    "Chumoukedima",
+    "Dimapur",
+    "Kiphire",
+    "Kohima",
+    "Longleng",
+    "Mokokchung",
+    "Mon",
+    "Niuland",
+    "Noklak",
+    "Peren",
+    "Phek",
+    "Shamator",
+    "Tseminyu",
+    "Tuensang",
+    "Wokha",
+    "Zunheboto"
+  ],
+  "National Capital Territory of Delhi": [
+    "Central Delhi",
+    "East Delhi",
+    "New Delhi",
+    "North Delhi",
+    "North East Delhi",
+    "North West Delhi",
+    "Shahdara",
+    "South Delhi",
+    "South East Delhi",
+    "South West Delhi",
+    "West Delhi"
+  ],
+  "Odisha": [
+    "Angul",
+    "Balangir",
+    "Balasore",
+    "Bargarh",
+    "Bhadrak",
+    "Boudh",
+    "Cuttack",
+    "Deogarh",
+    "Dhenkanal",
+    "Gajapati",
+    "Ganjam",
+    "Jagatsinghpur",
+    "Jajpur",
+    "Jharsuguda",
+    "Kalahandi",
+    "Kandhamal",
+    "Kendrapara",
+    "Kendujhar",
+    "Khordha",
+    "Koraput",
+    "Malkangiri",
+    "Mayurbhanj",
+    "Nabarangpur",
+    "Nayagarh",
+    "Nuapada",
+    "Puri",
+    "Rayagada",
+    "Sambalpur",
+    "Subarnapur",
+    "Sundargarh"
+  ],
+  "Puducherry": [
+    "Karaikal",
+    "Mahe",
+    "Puducherry",
+    "Yanam"
+  ],
+  "Punjab": [
+    "Amritsar",
+    "Barnala",
+    "Bathinda",
+    "Faridkot",
+    "Fatehgarh Sahib",
+    "Fazilka",
+    "Ferozepur",
+    "Gurdaspur",
+    "Hoshiarpur",
+    "Jalandhar",
+    "Kapurthala",
+    "Ludhiana",
+    "Malerkotla",
+    "Mansa",
+    "Moga",
+    "Muktsar",
+    "Pathankot",
+    "Patiala",
+    "Rupnagar",
+    "Sahibzada Ajit Singh Nagar",
+    "Sangrur",
+    "Shaheed Bhagat Singh Nagar",
+    "Tarn Taran"
+  ],
+  "Rajasthan": [
+    "Ajmer",
+    "Alwar",
+    "Anupgarh",
+    "Balotra",
+    "Banswara",
+    "Baran",
+    "Barmer",
+    "Beawar",
+    "Bharatpur",
+    "Bhilwara",
+    "Bikaner",
+    "Bundi",
+    "Chittorgarh",
+    "Churu",
+    "Dausa",
+    "Deeg",
+    "Dholpur",
+    "Didwana-Kuchaman",
+    "Dudu",
+    "Dungarpur",
+    "Gangapur City",
+    "Hanumangarh",
+    "Jaipur",
+    "Jaipur Rural",
+    "Jaisalmer",
+    "Jalore",
+    "Jhalawar",
+    "Jhunjhunu",
+    "Jodhpur",
+    "Jodhpur Rural",
+    "Karauli",
+    "Kekri",
+    "Khairthal-Tijara",
+    "Kota",
+    "Kotputli-Behror",
+    "Nagaur",
+    "Neem Ka Thana",
+    "Pali",
+    "Phalodi",
+    "Pratapgarh",
+    "Rajsamand",
+    "Salumbar",
+    "Sanchore",
+    "Sawai Madhopur",
+    "Shahpura",
+    "Sikar",
+    "Sirohi",
+    "Sri Ganganagar",
+    "Tonk",
+    "Udaipur"
+  ],
+  "Sikkim": [
+    "Gangtok",
+    "Gyalshing",
+    "Mangan",
+    "Namchi",
+    "Pakyong",
+    "Soreng"
+  ],
+  "Tamil Nadu": [
+    "Ariyalur",
+    "Chengalpattu",
+    "Chennai",
+    "Coimbatore",
+    "Cuddalore",
+    "Dharmapuri",
+    "Dindigul",
+    "Erode",
+    "Kallakurichi",
+    "Kanchipuram",
+    "Kanniyakumari",
+    "Karur",
+    "Krishnagiri",
+    "Madurai",
+    "Mayiladuthurai",
+    "Nagapattinam",
+    "Namakkal",
+    "Nilgiris",
+    "Perambalur",
+    "Pudukkottai",
+    "Ramanathapuram",
+    "Ranipet",
+    "Salem",
+    "Sivaganga",
+    "Tenkasi",
+    "Thanjavur",
+    "Theni",
+    "Thoothukudi",
+    "Tiruchirappalli",
+    "Tirunelveli",
+    "Tirupathur",
+    "Tiruppur",
+    "Tiruvallur",
+    "Tiruvannamalai",
+    "Tiruvarur",
+    "Vellore",
+    "Viluppuram",
+    "Virudhunagar"
+  ],
+  "Telangana": [
+    "Adilabad",
+    "Bhadradri Kothagudem",
+    "Hanamkonda",
+    "Hyderabad",
+    "Jagtial",
+    "Jangaon",
+    "Jayashankar Bhupalpally",
+    "Jogulamba Gadwal",
+    "Kamareddy",
+    "Karimnagar",
+    "Khammam",
+    "Komaram Bheem Asifabad",
+    "Mahabubabad",
+    "Mahabubnagar",
+    "Mancherial",
+    "Medak",
+    "Medchal-Malkajgiri",
+    "Mulugu",
+    "Nagarkurnool",
+    "Nalgonda",
+    "Narayanpet",
+    "Nirmal",
+    "Nizamabad",
+    "Peddapalli",
+    "Rajanna Sircilla",
+    "Ranga Reddy",
+    "Sangareddy",
+    "Siddipet",
+    "Suryapet",
+    "Vikarabad",
+    "Wanaparthy",
+    "Warangal",
+    "Yadadri Bhuvanagiri"
+  ],
+  "Tripura": [
+    "Dhalai",
+    "Gomati",
+    "Khowai",
+    "North Tripura",
+    "Sepahijala",
+    "South Tripura",
+    "Unakoti",
+    "West Tripura"
+  ],
+  "Uttar Pradesh": [
+    "Agra",
+    "Aligarh",
+    "Ambedkar Nagar",
+    "Amethi",
+    "Amroha",
+    "Auraiya",
+    "Ayodhya",
+    "Azamgarh",
+    "Baghpat",
+    "Bahraich",
+    "Ballia",
+    "Balrampur",
+    "Banda",
+    "Barabanki",
+    "Bareilly",
+    "Basti",
+    "Bhadohi",
+    "Bijnor",
+    "Budaun",
+    "Bulandshahr",
+    "Chandauli",
+    "Deoria",
+    "Etah",
+    "Etawah",
+    "Farrukhabad",
+    "Fatehpur",
+    "Firozabad",
+    "Gautam Buddha Nagar",
+    "Ghaziabad",
+    "Ghazipur",
+    "Gonda",
+    "Gorakhpur",
+    "Hamirpur",
+    "Hapur",
+    "Hardoi",
+    "Hathras",
+    "Jalaun",
+    "Jaunpur",
+    "Jhansi",
+    "Kannauj",
+    "Kanpur Dehat",
+    "Kanpur Nagar",
+    "Kasganj",
+    "Kaushambi",
+    "Kheri",
+    "Kushinagar",
+    "Lalitpur",
+    "Lucknow",
+    "Maharajganj",
+    "Mahoba",
+    "Mainpuri",
+    "Mathura",
+    "Mau",
+    "Meerut",
+    "Mirzapur",
+    "Moradabad",
+    "Muzaffarnagar",
+    "Pilibhit",
+    "Pratapgarh",
+    "Prayagraj",
+    "Raebareli",
+    "Rampur",
+    "Saharanpur",
+    "Sambhal",
+    "Sant Kabir Nagar",
+    "Shahjahanpur",
+    "Shamli",
+    "Shrawasti",
+    "Siddharthnagar",
+    "Sitapur",
+    "Sonbhadra",
+    "Sultanpur",
+    "Unnao",
+    "Varanasi"
+  ],
+  "Uttarakhand": [
+    "Almora",
+    "Bageshwar",
+    "Chamoli",
+    "Champawat",
+    "Dehradun",
+    "Haridwar",
+    "Nainital",
+    "Pauri Garhwal",
+    "Pithoragarh",
+    "Rudraprayag",
+    "Tehri Garhwal",
+    "Udham Singh Nagar",
+    "Uttarkashi"
+  ],
+  "West Bengal": [
+    "Alipurduar",
+    "Bankura",
+    "Birbhum",
+    "Cooch Behar",
+    "Dakshin Dinajpur",
+    "Darjeeling",
+    "Hooghly",
+    "Howrah",
+    "Jalpaiguri",
+    "Jhargram",
+    "Kalimpong",
+    "Kolkata",
+    "Malda",
+    "Murshidabad",
+    "Nadia",
+    "North 24 Parganas",
+    "Paschim Bardhaman",
+    "Paschim Medinipur",
+    "Purba Bardhaman",
+    "Purba Medinipur",
+    "Purulia",
+    "South 24 Parganas",
+    "Uttar Dinajpur"
+  ],
+  "Andaman and Nicobar Islands": [
+    "Nicobar",
+    "North and Middle Andaman",
+    "South Andaman"
+  ],
+  "Chandigarh": [
+    "Chandigarh"
+  ],
+  "Dadra and Nagar Haveli and Daman and Diu": [
+    "Dadra and Nagar Haveli",
+    "Daman",
+    "Diu"
+  ],
+  "Jammu and Kashmir": [
+    "Anantnag",
+    "Bandipora",
+    "Baramulla",
+    "Budgam",
+    "Doda",
+    "Ganderbal",
+    "Jammu",
+    "Kathua",
+    "Kishtwar",
+    "Kulgam",
+    "Kupwara",
+    "Poonch",
+    "Pulwama",
+    "Rajouri",
+    "Ramban",
+    "Reasi",
+    "Samba",
+    "Shopian",
+    "Srinagar",
+    "Udhampur"
+  ] 
+
                 },
                 states: [],
                 districts: [],
-
+                
                 form: { fullName: '', phone: '', houseNo: '', street: '', pincode: '', state: '', district: '' },
-
+                
                 qrUrl: '',
                 trackingId: '',
-
-                // Payment proof state (NEW)
-                proofData: null,   // resized Base64 string, set on submit
-                proofPreview: '',  // object URL for on-screen preview
-                proofError: '',
-
                 trackInput: '',
                 trackingResult: null,
 
                 init() {
                     this.states = Object.keys(this.locations).sort();
                     this.fetchProducts();
-
+                    
                     this.$watch('form.state', value => {
                         this.districts = this.locations[value] || [];
                         this.form.district = '';
                     });
+                    
+                    this.$watch('checkoutModal', val => {
+                        if(!val) setTimeout(() => { this.step = 1; if(this.step===3) this.cart = []; }, 300);
+                    });
                 },
 
                 async fetchProducts() {
-                    this.loading = true;
-                    this.loadError = false;
                     try {
                         const res = await fetch(`${this.dbUrl}/products.json`);
-                        if (!res.ok) throw new Error('Bad response');
                         const data = await res.json();
+                        // Initialize selectedPackage for each product for the dropdown
                         for (const key in data) {
                             data[key].selectedPackage = '1';
                         }
                         this.products = data || {};
                     } catch (e) {
-                        console.error('Failed to load products', e);
-                        this.products = {};
-                        this.loadError = true;
+                        console.error('Failed to load products');
                     } finally {
                         this.loading = false;
                     }
@@ -444,9 +1235,9 @@
 
                 addToCart(id, item) {
                     let pricePaid = item.price;
-                    if (item.selectedPackage === '2' && item.comboPrice) pricePaid = item.comboPrice;
-                    if (item.selectedPackage === '3' && item.comboPrice3) pricePaid = item.comboPrice3;
-
+                    if(item.selectedPackage === '2' && item.comboPrice) pricePaid = item.comboPrice;
+                    if(item.selectedPackage === '3' && item.comboPrice3) pricePaid = item.comboPrice3;
+                    
                     this.cart.push({
                         id: id,
                         name: item.name,
@@ -459,7 +1250,7 @@
 
                 removeFromCart(index) {
                     this.cart.splice(index, 1);
-                    if (this.cart.length === 0) this.cartOpen = false;
+                    if(this.cart.length === 0) this.cartOpen = false;
                 },
 
                 get cartTotal() {
@@ -472,25 +1263,8 @@
                     this.checkoutModal = true;
                 },
 
-                // Closing mid-flow now actually resets proof state, fixing the dead
-                // `if (this.step === 3)` check from the previous version.
-                closeCheckout() {
-                    const finished = this.step === 3;
-                    this.checkoutModal = false;
-                    setTimeout(() => {
-                        this.step = 1;
-                        this.proofData = null;
-                        this.proofPreview = '';
-                        this.proofError = '';
-                        if (finished) this.cart = [];
-                    }, 300);
-                },
-
                 proceedToPayment() {
-                    // Wider keyspace than before (6 digits across letters+digits worth of
-                    // entropy isn't needed here — this ID is just a human-readable
-                    // reference, not a security token) to cut collision odds at scale.
-                    this.trackingId = 'AESTH-' + Math.floor(100000 + Math.random() * 900000);
+                    this.trackingId = 'AESTH-' + Math.floor(10000 + Math.random() * 90000);
                     const upiId = "9744468830@fam";
                     const amount = this.cartTotal;
                     const name = encodeURIComponent("Aesthetica");
@@ -499,101 +1273,43 @@
                     this.step = 2;
                 },
 
-                // Resize + compress the screenshot client-side before Base64 encoding,
-                // so we don't dump multi-MB blobs into Firebase Realtime Database.
-                handleProofUpload(event) {
-                    const file = event.target.files[0];
-                    this.proofError = '';
-                    if (!file) return;
-
-                    if (!file.type.startsWith('image/')) {
-                        this.proofError = 'Please upload an image file.';
-                        return;
-                    }
-                    if (file.size > 8 * 1024 * 1024) {
-                        this.proofError = 'Image is too large (max 8MB before compression).';
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const maxDim = 1000;
-                            let { width, height } = img;
-                            if (width > maxDim || height > maxDim) {
-                                if (width > height) {
-                                    height = Math.round(height * (maxDim / width));
-                                    width = maxDim;
-                                } else {
-                                    width = Math.round(width * (maxDim / height));
-                                    height = maxDim;
-                                }
-                            }
-                            const canvas = document.createElement('canvas');
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            const compressed = canvas.toDataURL('image/jpeg', 0.7);
-                            this.proofData = compressed;
-                            this.proofPreview = compressed;
-                        };
-                        img.onerror = () => { this.proofError = 'Could not read that image. Try another file.'; };
-                        img.src = e.target.result;
-                    };
-                    reader.onerror = () => { this.proofError = 'Could not read that file.'; };
-                    reader.readAsDataURL(file);
-                },
-
                 async submitOrder() {
-                    if (!this.proofData) {
-                        this.proofError = 'Please upload your payment screenshot first.';
-                        return;
-                    }
                     this.submitting = true;
-
-                    // Status is ALWAYS 'Pending Verification' on creation. Nothing in this
-                    // file ever sets it to 'Confirmed' — that only happens from admin.html,
-                    // by a human, after actually checking the payment. Schema is additive:
-                    // existing fields unchanged, paymentProof/verifiedAt/verifiedBy are new
-                    // and optional, so admin.html reading old order shapes won't break.
+                    
                     const payload = {
                         orderId: this.trackingId,
                         timestamp: new Date().toISOString(),
-                        status: 'Pending Verification',
+                        status: 'Payment Verification',
                         customer: { ...this.form },
                         cart: this.cart,
-                        totalPaid: this.cartTotal,
-                        paymentProof: this.proofData,
-                        verifiedAt: null,
-                        verifiedBy: null
+                        totalPaid: this.cartTotal
                     };
 
                     try {
-                        const res = await fetch(`${this.dbUrl}/orders/${this.trackingId}.json`, {
+                        await fetch(`${this.dbUrl}/orders/${this.trackingId}.json`, {
                             method: 'PUT',
                             body: JSON.stringify(payload)
                         });
-                        if (!res.ok) throw new Error('Firebase write failed');
-
+                        
+                        // Notification to amanmuhammedp16@gmail.com
                         const cartSummary = this.cart.map(c => `${c.package}x ${c.name} (₹${c.pricePaid})`).join(', ');
                         fetch("https://formsubmit.co/ajax/amanmuhammedp16@gmail.com", {
                             method: "POST",
                             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                             body: JSON.stringify({
-                                _subject: `New Order Pending Verification: ${this.trackingId}`,
+                                _subject: `Strict Order Verification: ${this.trackingId}`,
                                 TrackingID: this.trackingId,
                                 CustomerName: this.form.fullName,
                                 CustomerPhone: this.form.phone,
                                 TotalPaid: '₹' + this.cartTotal,
                                 Items: cartSummary
                             })
-                        }).catch(e => console.log('Mail notification failed (order was still saved)', e));
+                        }).catch(e => console.log('Mail skipped', e));
 
                         this.step = 3;
+                        this.cart = []; // clear cart on success
                     } catch (e) {
-                        alert("We couldn't submit your order. Please check your connection and try again — your payment proof hasn't been lost, just retry.");
+                        alert("Transaction error. Please try again.");
                     } finally {
                         this.submitting = false;
                     }
@@ -602,20 +1318,14 @@
                 trackOrder() {
                     this.trackingResult = null;
                     const id = this.trackInput.trim().toUpperCase();
-                    if (!id) return;
-
+                    if(!id) return;
+                    
                     fetch(`${this.dbUrl}/orders/${id}.json`)
                         .then(res => res.json())
                         .then(data => { this.trackingResult = data ? data : false; })
                         .catch(e => alert("Network error."));
                 },
-
-                statusBadgeClass(status) {
-                    if (status === 'Confirmed' || status === 'Shipped') return 'bg-dark text-white';
-                    if (status === 'Rejected') return 'bg-red-600 text-white';
-                    return 'bg-gray-300 text-dark'; // Pending Verification
-                },
-
+                
                 openImage(url) {
                     if (url) window.open(url, '_blank');
                 }
